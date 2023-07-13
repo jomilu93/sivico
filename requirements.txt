@@ -1,0 +1,6 @@
+pandas
+nltk
+stanza
+sklearn
+transformers
+torch
