@@ -6,8 +6,8 @@ senator_matcher.egg-info/dependency_links.txt
 senator_matcher.egg-info/requires.txt
 senator_matcher.egg-info/top_level.txt
 senator_matcher/beto_matcher/__init__.py
-senator_matcher/beto_matcher/embeddings.py
-senator_matcher/beto_matcher/similarity.py
+senator_matcher/beto_matcher/embedding.py
+senator_matcher/beto_matcher/matching.py
 senator_matcher/tfidf_matcher/__init__.py
 senator_matcher/tfidf_matcher/matching.py
 senator_matcher/tfidf_matcher/preprocessing.py
