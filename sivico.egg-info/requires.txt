@@ -1,0 +1,22 @@
+ipdb
+ipykernel
+jupyter
+matplotlib
+nltk
+numpy
+pandas
+scikit-learn
+scipy
+seaborn
+stanza
+torch
+transformers
+
+[:sys_platform != "darwin"]
+tensorflow==2.10.0
+
+[:sys_platform == "darwin" and "ARM" in platform_version]
+tensorflow-macos==2.10.0
+
+[:sys_platform == "darwin" and "ARM" not in platform_version]
+tensorflow==2.10.0

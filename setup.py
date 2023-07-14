@@ -1,5 +1,4 @@
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("requirements.txt") as f:
     content = f.readlines()
@@ -11,10 +10,8 @@ setup(name='sivico',
       license="MIT",
       author="Team Sivico",
       author_email="jmlunamugica@mac.com",
-    #   url="https://github.com/lewagon/taxi-fare",
+      url="https://github.com/jomilu93/sivico",
       install_requires=requirements,
       packages=find_packages(),
-      test_suite="tests",
-      # include_package_data: to install data from MANIFEST.in
       include_package_data=True,
       zip_safe=False)
