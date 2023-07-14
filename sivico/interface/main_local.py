@@ -1,6 +1,6 @@
 import pandas as pd
 
-from sivico.senator_matcher.senator_matcher.tfidf_matcher.preprocessing import preprocess_text
+from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
 
 def preprocess() -> None:
     print("Preprocessing...")
