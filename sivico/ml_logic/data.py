@@ -28,7 +28,7 @@ def get_senator_initiative_data():
         senators = senators.rename(columns={"idSenador": "senator_id"})
         return senators
 
-    senators = get_senators
+    senators = get_senators()
 
     #Creating a field that includes first and last names to join with initiatives+proposals table.
     senators["senadores"] = senators["Nombre"].str.strip()+" "+senators["Apellidos"].str.strip()
@@ -161,6 +161,17 @@ def get_senator_initiative_data():
     #Creates dummy summary of a all initiatives, to be replaced by BERT or BETO summaries.
     senators["initiatives_summary_dummy"] = senators["initiative_list"].apply(lambda x: "".join(x))
     
+    print("✅ get_senator_initiative_data_done \n")
+    
+    #load processed senator data to big query
+    load_data_to_bq(
+        senators,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'pre-processed_senators',
+        truncate=True
+    )
+    
     return senators
 
 def get_data_with_cache(
@@ -181,16 +192,7 @@ def get_data_with_cache(
         client = bigquery.Client(project=gcp_project)
         query_job = client.query(query)
         result = query_job.result()
-        df = result.to_dataframe()
-
-        # Store as CSV if the BQ query returned at least one valid line
-        if df.shape[0] > 1:
-            df.to_csv(cache_path, header=data_has_header, index=False)
-
-    print(f"✅ Data loaded, with shape {df.shape}")
-
-    return df
-
+        
 def load_data_to_bq(
         data: pd.DataFrame,
         gcp_project:str,
@@ -230,6 +232,5 @@ def load_data_to_bq(
     # Load data
     job = client.load_table_from_dataframe(data, full_table_name, job_config=job_config)
     result = job.result()  # wait for the job to complete
-    # $CHA_END
 
     print(f"✅ Data saved to bigquery, with shape {data.shape}")

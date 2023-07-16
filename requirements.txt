@@ -19,3 +19,8 @@ stanza
 sklearn
 transformers
 torch
+
+# API
+fastapi
+pytz
+uvicorn
