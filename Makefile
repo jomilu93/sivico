@@ -7,6 +7,9 @@ reinstall_package:
 run_tfidf_preprocess:
 	python -c 'from sivico.interface.main_local import preprocess; preprocess()'
 
+run_tfidf_vectorization:
+	python -c 'from sivico.interface.main_local import vectorize_tfidf; vectorize_tfidf()'
+
 # run_data_extraction:
 # 	python -c 'from sivico.ml_logic.data import get_senator_initiative_data; get_senator_initiative_data()'
 
