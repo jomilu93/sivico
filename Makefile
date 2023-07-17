@@ -10,8 +10,8 @@ run_tfidf_preprocess:
 run_tfidf_vectorization:
 	python -c 'from sivico.interface.main_local import vectorize_tfidf; vectorize_tfidf()'
 
-# run_data_extraction:
-# 	python -c 'from sivico.ml_logic.data import get_senator_initiative_data; get_senator_initiative_data()'
+run_data_extraction:
+	python -c 'from sivico.ml_logic.data import get_senator_initiative_data; get_senator_initiative_data()'
 
-# run_api:
-# 	uvicorn sivico.api.fast:app --reload
+run_api:
+	uvicorn sivico.api.fast:app --reload
