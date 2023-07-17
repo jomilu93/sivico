@@ -9,6 +9,6 @@ def preprocess() -> None:
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_summarized_en.csv')).head(1)
+    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_summarized_en.csv'))
     df['preprocessed_summary'] = df['initiative_summary_en'].apply(preprocess_text)
     df.to_csv(os.path.join(project_data_path, 'senators_data_summarized_en_preprocessed.csv'), index=False)
