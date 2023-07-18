@@ -1,6 +1,7 @@
 from . import TOKENIZER, BETO_MODEL
 
 import torch
+import pickle
 
 def generate_embeddings(text, max_length=512):
     # Split the text into chunks to handle long summaries
@@ -19,3 +20,7 @@ def generate_embeddings(text, max_length=512):
     embeddings = embeddings.mean(dim=0)
 
     return embeddings
+
+def save_embeddings(embeddings, embeddings_filepath):
+    with open(embeddings_filepath, 'wb') as f:
+        pickle.dump(embeddings, f)
