@@ -13,9 +13,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 def summarize_bert():
     senators = get_senator_initiative_data()
-    
+
     print("✅ senator data ready to translate and summarize. \n")
-    
+
     #Split the concatenated initiatives for each senator into bites smaller than 5000 to be able to translate.
     senators["initiatives_summary_dummy_split"] = ""
     n = 4999
@@ -25,7 +25,7 @@ def summarize_bert():
             senators.at[i, "initiatives_summary_dummy_split"] = initiatives_split
         else:
             senators.at[i, "initiatives_summary_dummy_split"] = []
-    
+
     #Translate the concatenated, split string of initiatives per senator, store in new column.
 
     senators["initiatives_summary_dummy_split_en"] = ""
@@ -39,7 +39,7 @@ def summarize_bert():
         else:
             print(f"Senator number {i}, senator {row['senadores']} has no initiatives to translate.")
             continue
-        
+
     #Join all split, translated initiatives into one long english string per senator.
     senators["initiatives_summary_dummy_en"] = senators["initiatives_summary_dummy_split_en"].apply(lambda x: "".join(x))
 
@@ -57,13 +57,13 @@ def summarize_bert():
             n = 150
             sentences_split = [sentences[i:i+n] for i in range(0, len(sentences), n)]
             summary = []
-            
+
             #translate by batch, then rejoin and add to df
-            for sen_split in sentences_split:      
+            for sen_split in sentences_split:
                 #tokenize sentences
                 tokenized_sentences = [tokenizer.encode(sent, add_special_tokens=True) for sent in sentences]
 
-                #define max length 
+                #define max length
                 max_len = 0
                 for i in tokenized_sentences:
                     if len(i) > max_len:
@@ -101,13 +101,13 @@ def summarize_bert():
                     summary_sentences.append(sen_split[sentence_scores[i][0]])
                 sub_summary = ' '.join(summary_sentences)
                 summary.append(sub_summary)
-                        
+
             summary = " ".join([str(item) for item in summary])
 
-            senators.at[index, "initiative_summary_en"] = summary        
+            senators.at[index, "initiative_summary_en"] = summary
         else:
             continue
-    
+
     #Split the english summaries for each senator into bites smaller than 5000 to be able to translate back to spanish.
     senators["initiatives_summary_en_split"] = ""
 
@@ -119,7 +119,7 @@ def summarize_bert():
             senators.at[i, "initiatives_summary_en_split"] = summary_split_es
         else:
             senators.at[i, "initiatives_summary_en_split"] = []
-    
+
     #Translate the split english summaires back to spanish, split string of initiatives per senator, store in new column.
 
     senators["initiatives_summary_es_split"] = ""
@@ -133,10 +133,10 @@ def summarize_bert():
         else:
             print(f"Senator number {i}, senator {row['senadores']} has no initiatives to translate.")
             continue
-        
+
     #Merge translated batches into one
     senators["initiative_summary_es"] = senators["initiatives_summary_es_split"].apply(lambda x: "".join(x))
-    
+
     #load processed senator data to big query
     load_data_to_bq(
         senators,
