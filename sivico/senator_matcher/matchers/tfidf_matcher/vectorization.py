@@ -15,9 +15,9 @@ def save_vectorizer_and_matrix(X, vectorizer, matrix_filepath, vectorizer_filepa
 
 def load_vectorizer_and_matrix(matrix_filepath, vectorizer_filepath):
     with open(matrix_filepath, 'rb') as f:
-        X = pickle.load(f)
+        matrix = pickle.load(f)
 
     with open(vectorizer_filepath, 'rb') as f:
         vectorizer = pickle.load(f)
 
-    return X, vectorizer
+    return vectorizer, matrix

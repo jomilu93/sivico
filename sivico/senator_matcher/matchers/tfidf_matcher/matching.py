@@ -1,7 +1,7 @@
 from sklearn.metrics.pairwise import cosine_similarity
 from .preprocessing import preprocess_text
 
-def match_senators(user_input, df, vectorizer, X):
+def match_senators(user_input, df, vectorizer, matrix, n=5):
     # Preprocess the user's input
     user_input_preprocessed = preprocess_text(user_input)
 
@@ -9,7 +9,7 @@ def match_senators(user_input, df, vectorizer, X):
     user_vector = vectorizer.transform([user_input_preprocessed])
 
     # Calculate the cosine similarity between the user's vector and each senator's vector
-    similarity_scores = cosine_similarity(user_vector, X)
+    similarity_scores = cosine_similarity(user_vector, matrix)
 
     # Add the similarity scores to the dataframe
     df['similarity_score'] = similarity_scores[0]
@@ -18,4 +18,4 @@ def match_senators(user_input, df, vectorizer, X):
     df_sorted = df.sort_values('similarity_score', ascending=False)
 
     # Return the sorted dataframe
-    return df_sorted[['Apellidos', 'Nombre', 'Fraccion', 'similarity_score']]
+    return df_sorted[['Apellidos', 'Nombre', 'Fraccion', 'similarity_score']].head(n)
