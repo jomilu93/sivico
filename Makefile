@@ -5,13 +5,19 @@ reinstall_package:
 	@pip install -e .
 
 run_tfidf_preprocess:
-	python -c 'from sivico.interface.main_local import preprocess; preprocess()'
+	python -c 'from sivico.interface.main_local import tfidf_preprocess; tfidf_preprocess()'
 
 run_tfidf_vectorization:
 	python -c 'from sivico.interface.main_local import vectorize_tfidf; vectorize_tfidf()'
 
-generate_beto_embeddings:
+run_beto_preprocess:
+	python -c 'from sivico.interface.main_local import beto_preprocess; beto_preprocess()'
+
+run_beto_embedding:
 	python -c 'from sivico.interface.main_local import beto_embeddings; beto_embeddings()'
+
+run_beto_batch_embedding:
+	python -c 'from sivico.interface.main_local import beto_batch_embeddings; beto_batch_embeddings()'
 
 run_data_extraction:
 	python -c 'from sivico.ml_logic.data import get_senator_initiative_data; get_senator_initiative_data()'
