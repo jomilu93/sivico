@@ -1,5 +1,4 @@
 import pandas as pd
-
 from google.cloud import bigquery
 from colorama import Fore, Style
 from pathlib import Path
@@ -9,8 +8,6 @@ from transformers import BertTokenizer, BertModel
 from nltk.tokenize import sent_tokenize
 from deep_translator import GoogleTranslator
 from sklearn.metrics.pairwise import cosine_similarity
-
-
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
