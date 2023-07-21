@@ -1,4 +1,4 @@
-from senator_matcher.beto_matcher.embedding import generate_embeddings
+from .embedding import generate_embeddings
 
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np

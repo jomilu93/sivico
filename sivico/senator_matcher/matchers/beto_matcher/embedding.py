@@ -19,6 +19,7 @@ def generate_embeddings(text, max_length=512):
     # Average the embeddings of all the chunks
     embeddings = embeddings.mean(dim=0)
 
+    # Returns the embedding of one summary
     return embeddings
 
 def save_embeddings(embeddings, embeddings_filepath):
