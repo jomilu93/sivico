@@ -1,7 +1,7 @@
 from dateutil.parser import parse
 
 from sivico.params import *
-from sivico.ml_logic.data import get_senator_initiative_data, load_data_to_bq
+from sivico.text_input_and_summarization.data import get_senator_initiative_data, load_data_to_bq
 
 import torch
 import nltk
@@ -10,6 +10,7 @@ from nltk.tokenize import sent_tokenize
 from googletrans import Translator
 from deep_translator import GoogleTranslator
 from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
 
 def summarize_bert():
     senators = get_senator_initiative_data()
@@ -136,6 +137,9 @@ def summarize_bert():
 
     #Merge translated batches into one
     senators["initiative_summary_es"] = senators["initiatives_summary_es_split"].apply(lambda x: "".join(x))
+    
+    #clean data to ensure successful load to big query
+    senators = senators.fillna("").drop(["Unnamed: 0.1", "Unnamed: 0", "Unnamed: 0.2"], axis=1)
 
     #load processed senator data to big query
     load_data_to_bq(
