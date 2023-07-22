@@ -13,4 +13,5 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # Downloads necessary resources
 nltk.download('stopwords')
+nltk.download('punkt')
 stanza.download('es')
