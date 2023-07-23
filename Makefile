@@ -20,7 +20,7 @@ run_beto_batch_embedding:
 	python -c 'from sivico.interface.main_local import beto_batch_embeddings; beto_batch_embeddings()'
 
 run_data_extraction:
-	python -c 'from sivico.ml_logic.data import get_senator_initiative_data; get_senator_initiative_data()'
+	python -c 'from sivico.text_input_and_summarization.data import get_senator_initiative_data; get_senator_initiative_data()'
 
 get_data_from_bq:
 	python -c 'from sivico.text_input_and_summarization.data import get_data_from_bq; get_data_from_bq()'
