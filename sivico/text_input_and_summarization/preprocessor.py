@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 
 def summarize_bert():
-    senators = get_senator_initiative_data()
+    senators = get_data_from_bq(pre-processed_senators)
 
     print("✅ senator data ready to translate and summarize. \n")
 
@@ -146,6 +146,6 @@ def summarize_bert():
         senators,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
-        table=f'processed_senators',
+        table=f'summarized_senators',
         truncate=True
     )

@@ -215,7 +215,7 @@ def get_senator_initiative_data():
     
     return senators
 
-def get_data_from_bq() -> None:
+def get_data_from_bq(table_name) -> None:
     """
     Retrieve `query` data from BigQuery, or from `cache_path` if the file exists
     Store at `cache_path` if retrieved from BigQuery for future use
@@ -223,7 +223,7 @@ def get_data_from_bq() -> None:
     
     query = f"""
         SELECT *
-        FROM {GCP_PROJECT}.{BQ_DATASET}.processed_senators
+        FROM {GCP_PROJECT}.{BQ_DATASET}.{table_name}
     """
     
     gcp_project = os.environ.get("GCP_PROJECT")
