@@ -184,7 +184,7 @@ def get_senator_initiative_data():
         initiatives = []
         relevant_inipros = inipros[inipros["senator_id"] == str(row["senator_id"])]["sintesis"]
         [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
-        senators.at[i, "initiative_list"] = initiatives
+        senators.at[i, "initiative_list"] = set(initiatives)
         
     #Creates dummy summary of a all initiatives, to be replaced by BERT or BETO summaries.
     senators["initiatives_summary_dummy"] = senators["initiative_list"].apply(lambda x: "".join(x))
@@ -200,7 +200,7 @@ def get_senator_initiative_data():
             initiatives = []
             relevant_inipros = inipros[(inipros["senator_id"] == str(row["senator_id"])) & (inipros["comisiones"]==str(commission))]["sintesis"]
             [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
-            senators.at[i, f"{commission}_initiative_list"] = initiatives
+            senators.at[i, f"{commission}_initiative_list"] = set(initiatives)
     
     print("✅ get_senator_initiative_data_done \n")
     
@@ -209,7 +209,7 @@ def get_senator_initiative_data():
         senators,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
-        table=f'pre-processed_senators',
+        table=f'pre_processed_senators',
         truncate=True
     )
     
