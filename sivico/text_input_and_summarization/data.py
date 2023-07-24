@@ -145,7 +145,38 @@ def get_senator_initiative_data():
     #Inner join on senator names to ensure only initiatives that match senator ids from table remain.
     inipros = inipros.merge(senators[["senadores", "senator_id"]], how='inner', on='senadores')
     
-    #Return initiative list back to senator df
+    #Create a clean list of commissions to which each initiative belongs
+
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.split("<br>")[1].strip() 
+                                                        if "Puntos Constitucionales" in x and not x.split("<br>")[1] == ""
+                                                        else x.split("<br>")[0].strip())
+
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.split(", ") if "Comisión" in x else x)
+
+    inipros = inipros.explode("comisiones")
+
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace("(Coordinadora)", ""))
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace("Tercera Comisión:", ""))
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace("Segunda Comisión:", ""))
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace("Primera Comisión:", "").strip())
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace("(Comisiones Unidas)", "").strip())
+
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.split(" y ") if "Defensa Nacional y Educación Pública" in x else x)
+
+    inipros = inipros.explode("comisiones")
+
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Relaciones Exteriores".strip() if "Relaciones Exteriores" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Educación".strip() if "Educación" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Justicia".strip() if "Justicia" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Seguridad Social".strip() if "Social" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Agricultura, Ganadería, Pesca y Desarrollo Rural".strip() if "Agr" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Energía".strip() if "Recursos Hidráulicos" in x else x)
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Estudios Legislativos".strip() if "Legislativos" in x else x)
+    
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace(" ", "_").strip())
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace(",", "_").strip())
+    
+    #Return overall initiative list back to senator df
     senators["initiative_list"] = ""
     
     #Function that creates a list of initiative syntheses and then adds to senator database.
@@ -153,10 +184,23 @@ def get_senator_initiative_data():
         initiatives = []
         relevant_inipros = inipros[inipros["senator_id"] == str(row["senator_id"])]["sintesis"]
         [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
-        senators.at[i, "initiative_list"] = initiatives
-    
+        senators.at[i, "initiative_list"] = set(initiatives)
+        
     #Creates dummy summary of a all initiatives, to be replaced by BERT or BETO summaries.
     senators["initiatives_summary_dummy"] = senators["initiative_list"].apply(lambda x: "".join(x))
+    
+    #Create column for each commission
+    commissions = inipros["comisiones"].unique()
+    for commission in commissions:
+        senators[f"{commission}_initiative_list"] = ""
+        
+    #Fill columns with relevant initiatves per sentator and commission
+    for i, row in senators.iterrows():
+        for commission in commissions:
+            initiatives = []
+            relevant_inipros = inipros[(inipros["senator_id"] == str(row["senator_id"])) & (inipros["comisiones"]==str(commission))]["sintesis"]
+            [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
+            senators.at[i, f"{commission}_initiative_list"] = set(initiatives)
     
     print("✅ get_senator_initiative_data_done \n")
     
@@ -165,13 +209,13 @@ def get_senator_initiative_data():
         senators,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
-        table=f'pre-processed_senators',
+        table=f'pre_processed_senators',
         truncate=True
     )
     
     return senators
 
-def get_data_from_bq() -> None:
+def get_data_from_bq(table_name) -> None:
     """
     Retrieve `query` data from BigQuery, or from `cache_path` if the file exists
     Store at `cache_path` if retrieved from BigQuery for future use
@@ -179,7 +223,7 @@ def get_data_from_bq() -> None:
     
     query = f"""
         SELECT *
-        FROM {GCP_PROJECT}.{BQ_DATASET}.processed_senators
+        FROM {GCP_PROJECT}.{BQ_DATASET}.{table_name}
     """
     
     gcp_project = os.environ.get("GCP_PROJECT")

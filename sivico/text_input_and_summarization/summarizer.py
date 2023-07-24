@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 
 def summarize_bert():
-    senators = get_senator_initiative_data()
+    senators = get_data_from_bq(pre_processed_senators)
 
     print("✅ senator data ready to translate and summarize. \n")
 
@@ -21,7 +21,7 @@ def summarize_bert():
     senators["initiatives_summary_dummy_split"] = ""
     n = 4999
     for i, row in senators.iterrows():
-        if not row["initiative_list"] == []:
+        if not row["initiative_list"].size <= 0:
             initiatives_split = [row["initiatives_summary_dummy"][i:i+n] for i in range(0, len(row["initiatives_summary_dummy"]), n)]
             senators.at[i, "initiatives_summary_dummy_split"] = initiatives_split
         else:
@@ -115,7 +115,7 @@ def summarize_bert():
     n = 4999
 
     for i, row in senators.iterrows():
-        if not row["initiative_list"] == []:
+        if not row["initiative_list"].size <= 0:
             summary_split_es = [row["initiative_summary_en"][i:i+n] for i in range(0, len(row["initiative_summary_en"]), n)]
             senators.at[i, "initiatives_summary_en_split"] = summary_split_es
         else:
@@ -139,13 +139,15 @@ def summarize_bert():
     senators["initiative_summary_es"] = senators["initiatives_summary_es_split"].apply(lambda x: "".join(x))
     
     #clean data to ensure successful load to big query
-    senators = senators.fillna("").drop(["Unnamed: 0.1", "Unnamed: 0", "Unnamed: 0.2"], axis=1)
+    senators = senators.fillna("")
+    senators = senators.astype(str)
+
 
     #load processed senator data to big query
     load_data_to_bq(
         senators,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
-        table=f'processed_senators',
+        table=f'summarized_senators',
         truncate=True
     )
