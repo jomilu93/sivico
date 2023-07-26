@@ -6,9 +6,21 @@ from colorama import Fore, Style
 from dateutil.parser import parse
 
 from sivico.params import *
-from sivico.ml_logic.preprocessor import summarize_bert
+from sivico.text_input_and_summarization.data import get_data_from_bq, load_data_to_bq
+from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
 
-summarize_bert()
+def tfidf_preprocess() -> None:
+    print("Preprocessing...")
 
-print("✅ data downloaded, translated and pushed to BigQuery \n")
+    df = get_data_from_bq('summarized_senators')
+    df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
+    df.dropna(subset=['tfidf_preprocessed_summary'], inplace=True)
+
+    load_data_to_bq(
+        df,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'processed_senators',
+        truncate=True
+    )
 
