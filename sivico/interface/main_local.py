@@ -5,7 +5,6 @@ import pickle
 
 from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
 from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix, load_vectorizer_and_matrix
-from sivico.text_input_and_vectorization.data import get_data_from_bq, load_data_from_bq
 
 from sivico.senator_matcher.matchers.beto_matcher.embedding import generate_embeddings, save_embeddings
 from sivico.senator_matcher.matchers.beto_matcher.preprocessing import preprocess_text_for_beto
@@ -16,15 +15,9 @@ def tfidf_preprocess() -> None:
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = get_data_from_bq(summarized_senators)
-    df['preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
-    load_data_to_bq(
-        df,
-        gcp_project=GCP_PROJECT,
-        bq_dataset=BQ_DATASET,
-        table=f'processed_senators',
-        truncate=True
-    )
+    df = pd.read_csv(os.path.join(project_data_path, 'summarized_senators.csv'))
+    df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
+    df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
 def vectorize_tfidf() -> None:
     print("Vectorizing...")
@@ -35,7 +28,7 @@ def vectorize_tfidf() -> None:
     matrix_filepath = os.path.join(project_model_path, 'tfidf_matrix_es.pkl')
     vectorizer_filepath = os.path.join(project_model_path, 'fitted_vectorizer_es.pkl')
 
-    df = get_data_from_bq(processed_senators)
+    df = pd.read_csv(os.path.join(project_directory, 'data', 'processed_senators.csv'))
 
     tfidf_matrix, vectorizer = fit_vectorizer(df, 'preprocessed_summary')
     save_vectorizer_and_matrix(tfidf_matrix, vectorizer, matrix_filepath, vectorizer_filepath)
@@ -48,31 +41,17 @@ def beto_preprocess() -> None:
 
     df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated.csv'), index_col='Unnamed: 0')
 
-    df['preprocessed_beto_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
-    df.dropna(subset=['preprocessed_beto_summary'], inplace=True)
-    df.to_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'), index=False)
+    df['beto_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
+    df.dropna(subset=['beto_preprocessed_summary'], inplace=True)
+    df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
-def beto_embeddings() -> None:
-    print("Generating Beto embeddings...")
-
-    project_directory = os.getcwd()
-    project_data_path = os.path.join(project_directory, 'data')
-
-    project_model_path = os.path.join(project_directory, 'beto_embeddings')
-    embeddings_filepath = os.path.join(project_model_path, 'embeddings_es.pkl')
-
-    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'))
-    embeddings = [generate_embeddings(text) for text in df['preprocessed_beto_summary']]
-
-    save_embeddings(embeddings, embeddings_filepath)
-
-def beto_batch_embeddings(batch_size=3) -> None:
+def beto_batch_embeddings(batch_size=2) -> None:
     print("Generating Beto embeddings in batches...")
 
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'))
+    df = pd.read_csv(os.path.join(project_data_path, 'processed_senators.csv'))
 
     # Prepare the file to save embeddings incrementally
     project_model_path = os.path.join(project_directory, 'beto_embeddings')
@@ -88,7 +67,7 @@ def beto_batch_embeddings(batch_size=3) -> None:
 
     for batch_number, batch in df.groupby(np.arange(len(df)) // batch_size):
         print(f"Processing batch {batch_number + 1} of {num_batches}...")
-        batch_embeddings = [generate_embeddings(text) for text in batch['preprocessed_beto_summary']]
+        batch_embeddings = [generate_embeddings(text) for text in batch['beto_preprocessed_summary']]
 
         # Load current embeddings, append new ones, and save back
         with open(embeddings_filepath, 'rb') as f:
