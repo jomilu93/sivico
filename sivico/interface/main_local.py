@@ -15,7 +15,7 @@ def tfidf_preprocess() -> None:
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = pd.read_csv(os.path.join(project_data_path, 'summarized_senators.csv')).head(3)
+    df = pd.read_csv(os.path.join(project_data_path, 'summarized_senators.csv'))
     df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
     df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
