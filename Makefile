@@ -17,6 +17,9 @@ run_tfidf_vectorization_local:
 	python -c 'from sivico.interface.main_local import vectorize_tfidf; vectorize_tfidf()'
 
 run_beto_preprocess:
+	python -c 'from sivico.interface.main import beto_preprocess; beto_preprocess()'
+
+run_beto_preprocess_local:
 	python -c 'from sivico.interface.main_local import beto_preprocess; beto_preprocess()'
 
 run_beto_embedding:

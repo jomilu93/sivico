@@ -38,3 +38,19 @@ def vectorize_tfidf() -> None:
 
     tfidf_matrix, vectorizer = fit_vectorizer(df, 'tfidf_preprocessed_summary')
     save_vectorizer_and_matrix(tfidf_matrix, vectorizer, matrix_filepath, vectorizer_filepath)
+
+def beto_preprocess() -> None:
+    print('...Preprocessing')
+
+    df = get_data_from_bq('summarized_senators')
+
+    df['beto_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
+    df.dropna(subset=['beto_preprocessed_summary'], inplace=True)
+
+    load_data_to_bq(
+        df,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'processed_senators',
+        truncate=True
+    )

@@ -41,9 +41,9 @@ def beto_preprocess() -> None:
 
     df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated.csv'), index_col='Unnamed: 0')
 
-    df['preprocessed_beto_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
-    df.dropna(subset=['preprocessed_beto_summary'], inplace=True)
-    df.to_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'), index=False)
+    df['beto_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
+    df.dropna(subset=['beto_preprocessed_summary'], inplace=True)
+    df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
 def beto_embeddings() -> None:
     print("Generating Beto embeddings...")
