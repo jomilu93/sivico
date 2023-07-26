@@ -23,9 +23,9 @@ run_beto_preprocess_local:
 	python -c 'from sivico.interface.main_local import beto_preprocess; beto_preprocess()'
 
 run_beto_embedding:
-	python -c 'from sivico.interface.main_local import beto_embeddings; beto_embeddings()'
+	python -c 'from sivico.interface.main import beto_batch_embeddings; beto_batch_embeddings()'
 
-run_beto_batch_embedding:
+run_beto_embedding_local:
 	python -c 'from sivico.interface.main_local import beto_batch_embeddings; beto_batch_embeddings()'
 
 run_data_extraction:

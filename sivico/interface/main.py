@@ -54,3 +54,36 @@ def beto_preprocess() -> None:
         table=f'processed_senators',
         truncate=True
     )
+
+def beto_batch_embeddings(batch_size=2) -> None:
+    print("Generating Beto embeddings in batches...")
+
+    project_directory = os.getcwd()
+    project_data_path = os.path.join(project_directory, 'data')
+
+    df = get_data_from_bq('processed_senators')
+
+    # Prepare the file to save embeddings incrementally
+    project_model_path = os.path.join(project_directory, 'beto_embeddings')
+    embeddings_filepath = os.path.join(project_model_path, 'embeddings_es.pkl')
+
+    # Clear the existing embeddings file or create an empty one
+    with open(embeddings_filepath, 'wb') as f:
+        pickle.dump([], f)
+
+    # Split the dataframe into batches and generate embeddings
+    # this is to take into account partial batches.
+    num_batches = len(df) // batch_size + (1 if len(df) % batch_size != 0 else 0)
+
+    for batch_number, batch in df.groupby(np.arange(len(df)) // batch_size):
+        print(f"Processing batch {batch_number + 1} of {num_batches}...")
+        batch_embeddings = [generate_embeddings(text) for text in batch['beto_preprocessed_summary']]
+
+        # Load current embeddings, append new ones, and save back
+        with open(embeddings_filepath, 'rb') as f:
+            all_embeddings = pickle.load(f)
+        all_embeddings.extend(batch_embeddings)
+        with open(embeddings_filepath, 'wb') as f:
+            pickle.dump(all_embeddings, f)
+
+    print("Embeddings saved successfully!")

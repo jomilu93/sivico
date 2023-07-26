@@ -45,27 +45,13 @@ def beto_preprocess() -> None:
     df.dropna(subset=['beto_preprocessed_summary'], inplace=True)
     df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
-def beto_embeddings() -> None:
-    print("Generating Beto embeddings...")
-
-    project_directory = os.getcwd()
-    project_data_path = os.path.join(project_directory, 'data')
-
-    project_model_path = os.path.join(project_directory, 'beto_embeddings')
-    embeddings_filepath = os.path.join(project_model_path, 'embeddings_es.pkl')
-
-    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'))
-    embeddings = [generate_embeddings(text) for text in df['preprocessed_beto_summary']]
-
-    save_embeddings(embeddings, embeddings_filepath)
-
-def beto_batch_embeddings(batch_size=3) -> None:
+def beto_batch_embeddings(batch_size=2) -> None:
     print("Generating Beto embeddings in batches...")
 
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = pd.read_csv(os.path.join(project_data_path, 'senators_data_updated_preprocessed.csv'))
+    df = pd.read_csv(os.path.join(project_data_path, 'processed_senators.csv'))
 
     # Prepare the file to save embeddings incrementally
     project_model_path = os.path.join(project_directory, 'beto_embeddings')
@@ -81,7 +67,7 @@ def beto_batch_embeddings(batch_size=3) -> None:
 
     for batch_number, batch in df.groupby(np.arange(len(df)) // batch_size):
         print(f"Processing batch {batch_number + 1} of {num_batches}...")
-        batch_embeddings = [generate_embeddings(text) for text in batch['preprocessed_beto_summary']]
+        batch_embeddings = [generate_embeddings(text) for text in batch['beto_preprocessed_summary']]
 
         # Load current embeddings, append new ones, and save back
         with open(embeddings_filepath, 'rb') as f:
