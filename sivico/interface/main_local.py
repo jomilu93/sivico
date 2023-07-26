@@ -28,7 +28,7 @@ def vectorize_tfidf() -> None:
     matrix_filepath = os.path.join(project_model_path, 'tfidf_matrix_es.pkl')
     vectorizer_filepath = os.path.join(project_model_path, 'fitted_vectorizer_es.pkl')
 
-    df = get_data_from_bq(processed_senators)
+    df = pd.read_csv(os.path.join(project_directory, 'data', 'processed_senators.csv'))
 
     tfidf_matrix, vectorizer = fit_vectorizer(df, 'preprocessed_summary')
     save_vectorizer_and_matrix(tfidf_matrix, vectorizer, matrix_filepath, vectorizer_filepath)
