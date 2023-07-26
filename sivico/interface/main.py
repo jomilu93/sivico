@@ -9,13 +9,20 @@ from sivico.params import *
 from sivico.text_input_and_summarization.data import get_data_from_bq, load_data_to_bq
 from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
 from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix, load_vectorizer_and_matrix
+from sivico.senator_matcher.matchers.beto_matcher.preprocessing import preprocess_text_for_beto
 
+# We want to run beto_preprocess first in ordert to have both
+# preprocess fields (tfifd and BETO) in the same processed dataframe
 def tfidf_preprocess() -> None:
     print("Preprocessing...")
 
-    df = get_data_from_bq('summarized_senators')
-    df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
+    # we want to run the preprocessed in the already processed dataframe
+    # to add the column tfidf_preprocessed_summary in the same dataframe
+    # as beto_preprocessed_summary
+    df = get_data_from_bq('processed_senators')
+    df['tfidf_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text)
     df.dropna(subset=['tfidf_preprocessed_summary'], inplace=True)
+    df.reset_index(inplace=True)
 
     load_data_to_bq(
         df,
@@ -46,6 +53,7 @@ def beto_preprocess() -> None:
 
     df['beto_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text_for_beto)
     df.dropna(subset=['beto_preprocessed_summary'], inplace=True)
+    df.reset_index(inplace=True)
 
     load_data_to_bq(
         df,
