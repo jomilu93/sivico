@@ -5,6 +5,9 @@ reinstall_package:
 	@pip install -e .
 
 run_tfidf_preprocess:
+	python -c 'from sivico.interface.main import tfidf_preprocess; tfidf_preprocess()'
+
+run_tfidf_preprocess_local:
 	python -c 'from sivico.interface.main_local import tfidf_preprocess; tfidf_preprocess()'
 
 run_tfidf_vectorization:

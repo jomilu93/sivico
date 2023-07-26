@@ -5,7 +5,6 @@ import pickle
 
 from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
 from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix, load_vectorizer_and_matrix
-from sivico.text_input_and_vectorization.data import get_data_from_bq, load_data_from_bq
 
 from sivico.senator_matcher.matchers.beto_matcher.embedding import generate_embeddings, save_embeddings
 from sivico.senator_matcher.matchers.beto_matcher.preprocessing import preprocess_text_for_beto
@@ -16,15 +15,9 @@ def tfidf_preprocess() -> None:
     project_directory = os.getcwd()
     project_data_path = os.path.join(project_directory, 'data')
 
-    df = get_data_from_bq(summarized_senators)
-    df['preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
-    load_data_to_bq(
-        df,
-        gcp_project=GCP_PROJECT,
-        bq_dataset=BQ_DATASET,
-        table=f'processed_senators',
-        truncate=True
-    )
+    df = pd.read_csv(os.path.join(project_data_path, 'summarized_senators.csv')).head(3)
+    df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
+    df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
 def vectorize_tfidf() -> None:
     print("Vectorizing...")
