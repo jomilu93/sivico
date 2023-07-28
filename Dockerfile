@@ -1,4 +1,5 @@
-# We strip the requirements from useless packages like `ipykernel`, `matplotlib` etc...
+FROM python:3.10.6-buster
+
 COPY requirements_prod.txt requirements.txt
 RUN pip install -r requirements.txt
 
@@ -6,7 +7,10 @@ COPY sivico sivico
 COPY setup.py setup.py
 RUN pip install .
 
-COPY Makefile Makefile
-RUN make reset_local_files
+# should remove these once we're able to fetch data directly from GCP
+COPY data data
+COPY tfidf_model tfidf_model
 
-CMD uvicorn taxifare.api.fast:app --host 0.0.0.0 --port $PORT
+COPY Makefile Makefile
+
+CMD uvicorn sivico.api.fast:app --host 0.0.0.0 --port $PORT
