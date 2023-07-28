@@ -18,7 +18,7 @@ def match_senators(user_input, df, vectorizer, matrix, n=5):
     df_sorted = df.sort_values('similarity_score', ascending=False)
 
     # Return the sorted dataframe
-    return df_sorted[['senadores', 'Fraccion', 'Estado', 'correo', 'url_sitio', 
+    return df_sorted[['senator_id', 'senadores', 'Fraccion', 'Estado', 'correo', 'url_sitio', 
                     'telefono', 'attendance_score', 'similarity_score', 'Salud_initiative_list',
                     'Estudios_Legislativos_initiative_list', 'Educación_initiative_list', 
                     'Para_la_Igualdad_de_Género_initiative_list', 'Defensa_Nacional_initiative_list',
