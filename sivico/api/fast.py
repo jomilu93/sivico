@@ -49,13 +49,14 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/senators")
 def senators(user_input: str):
     response = {}
-    response['tfidf'] = match_senators(
-        user_input,
-        app_data['senators_df'],
-        app_data['vectorizer'],
-        app_data['matrix']).to_dict(orient='records')
+    # response['tfidf'] = match_senators(
+    #     user_input,
+    #     app_data['senators_df'],
+    #     app_data['vectorizer'],
+    #     app_data['matrix']).to_dict(orient='records')
 
     response['beto'] = beto_senators(user_input).to_dict(orient='records')
+    response['tfidf'] = beto_senators(user_input).to_dict(orient='records')
     return response
 
 def beto_senators(user_input: str):
