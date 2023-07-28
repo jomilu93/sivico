@@ -1,7 +1,9 @@
 from dateutil.parser import parse
 
 from sivico.params import *
-from sivico.text_input_and_summarization.data import get_senator_initiative_data, load_data_to_bq, get_data_from_bq
+from sivico.text_input_and_summarization.data import get_data_from_bq
+from sivico.text_input_and_summarization.data import load_data_to_bq
+from sivico.text_input_and_summarization.data import get_senator_initiative_data
 
 import torch
 import nltk
@@ -14,7 +16,7 @@ import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 def summarize_beto():
-    senators = get_senator_initiative_data()
+    senators = get_data_from_bq("pre_processed_senators")
     print("✅ senator data ready to translate and summarize. \n")
 
     tokenizer = AutoTokenizer.from_pretrained("mrm8488/bert2bert_shared-spanish-finetuned-summarization")

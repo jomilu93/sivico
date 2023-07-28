@@ -11,7 +11,8 @@ from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import load_vec
 from sivico.senator_matcher.matchers.beto_matcher.matching import match_senators as beto_match_senators
 from sivico.senator_matcher.matchers.beto_matcher.matching import get_top_senators
 
-from sivico.text_input_and_vectorization.data import get_data_from_bq, load_data_from_bq
+from sivico.text_input_and_summarization.data import get_data_from_bq
+from sivico.text_input_and_summarization.data import load_data_to_bq
 
 app = FastAPI()
 
@@ -29,7 +30,7 @@ app_data = {}
 # see https://fastapi.tiangolo.com/advanced/events/
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app_data['senators_df'] = get_data_from_bq(summarized_senators)
+    app_data['senators_df'] = get_data_from_bq("summarized_senators")
 
     matrix_filepath = 'tfidf_model/tfidf_matrix_es.pkl'
     vectorizer_filepath = 'tfidf_model/fitted_vectorizer_es.pkl'
