@@ -30,7 +30,7 @@ def vectorize_tfidf() -> None:
 
     df = pd.read_csv(os.path.join(project_directory, 'data', 'processed_senators.csv'))
 
-    tfidf_matrix, vectorizer = fit_vectorizer(df, 'preprocessed_summary')
+    tfidf_matrix, vectorizer = fit_vectorizer(df, 'tfidf_preprocessed_summary')
     save_vectorizer_and_matrix(tfidf_matrix, vectorizer, matrix_filepath, vectorizer_filepath)
 
 def beto_preprocess() -> None:
