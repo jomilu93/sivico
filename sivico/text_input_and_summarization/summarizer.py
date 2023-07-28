@@ -1,7 +1,9 @@
 from dateutil.parser import parse
 
 from sivico.params import *
-from sivico.text_input_and_summarization.data import get_senator_initiative_data, load_data_to_bq
+from sivico.text_input_and_summarization.data import get_data_from_bq
+from sivico.text_input_and_summarization.data import load_data_to_bq
+from sivico.text_input_and_summarization.data import get_senator_initiative_data
 
 import torch
 import nltk
@@ -11,6 +13,52 @@ from googletrans import Translator
 from deep_translator import GoogleTranslator
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+def summarize_beto():
+    senators = get_data_from_bq("pre_processed_senators")
+    print("✅ senator data ready to translate and summarize. \n")
+
+    tokenizer = AutoTokenizer.from_pretrained("mrm8488/bert2bert_shared-spanish-finetuned-summarization")
+    model = AutoModelForSeq2SeqLM.from_pretrained("mrm8488/bert2bert_shared-spanish-finetuned-summarization")
+
+    def summarizeRow(prop_inc_t, resumentList, inputsList):
+        for parag in prop_inc_t:
+            inputs = tokenizer.encode(parag, return_tensors="pt", max_length=511, truncation=True)
+            inputsList.append(inputs)
+            resumen = model.generate(
+                inputs, 
+                max_length=200,
+                min_length=5, 
+                length_penalty=2.0, 
+                num_beams=4, 
+                early_stopping=True)
+            resumentList.append(tokenizer.decode(resumen[0]))
+    
+    #Adding BETO to dataset
+    senators['BETO_summary'] = ""
+    
+    index = 0
+    for row in senators['initiative_list']:
+        resumentList_2 = []
+        inputsList_2 = []
+
+        summarizeRow(row, resumentList_2, inputsList_2)
+        senators['BETO_summary'][index] = resumentList_2
+        index += 1
+    
+    #clean data to ensure successful load to big query
+    senators = senators.fillna("")
+    senators = senators.astype(str)
+
+    #load processed senator data to big query
+    load_data_to_bq(
+        senators,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'summarized_senators',
+        truncate=True
+    )
 
 def summarize_bert():
     senators = get_data_from_bq(pre_processed_senators)

@@ -31,6 +31,9 @@ run_beto_embedding_local:
 run_data_extraction:
 	python -c 'from sivico.text_input_and_summarization.data import get_senator_initiative_data; get_senator_initiative_data()'
 
+run_data_summarization:
+	python -c 'from sivico.text_input_and_summarization.summarizer import summarize_beto; summarize_beto()'
+
 get_data_from_bq:
 	python -c 'from sivico.text_input_and_summarization.data import get_data_from_bq; get_data_from_bq()'
 

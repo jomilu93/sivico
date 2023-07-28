@@ -215,11 +215,7 @@ def get_senator_initiative_data():
     
     return senators
 
-def get_data_from_bq(table_name) -> None:
-    """
-    Retrieve `query` data from BigQuery, or from `cache_path` if the file exists
-    Store at `cache_path` if retrieved from BigQuery for future use
-    """
+def get_data_from_bq(table_name):
     
     query = f"""
         SELECT *
@@ -244,7 +240,7 @@ def load_data_to_bq(
         bq_dataset:str,
         table: str,
         truncate: bool
-    ) -> None:
+    ):
     """
     - Save the DataFrame to BigQuery
     - Empty the table beforehand if `truncate` is True, append otherwise
