@@ -46,4 +46,4 @@ def get_top_senators(scores, senators_df, N=5):
                          'Junta_de_Coordinación_Política_initiative_list','Federalismo_y_Desarrollo_Municipal_initiative_list',
                          'Marina_initiative_list','Asuntos_Indígenas_initiative_list','Zonas_Metropolitanas_y_Movilidad_initiative_list',
                          'Puntos_Constitucionales_initiative_list','Cámara_de_Diputados_initiative_list','Defensa_de_los_Consumidores_initiative_list',
-                         'Mesa_Directiva_initiative_list']]
+                         'Mesa_Directiva_initiative_list', 'BETO_summary']]
