@@ -16,7 +16,30 @@ def tfidf_preprocess() -> None:
     project_data_path = os.path.join(project_directory, 'data')
 
     df = pd.read_csv(os.path.join(project_data_path, 'summarized_senators.csv'))
-    df['tfidf_preprocessed_summary'] = df['initiative_summary_es'].apply(preprocess_text)
+    df['tfidf_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text)
+    df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
+
+def tfidf_batch_preprocess(batch_size=2) -> None:
+    """
+    Preprocesses the 'BETO_summary' column of the dataframe in batches
+    and saves the result in 'processed_senators.csv'.
+    """
+    print("Preprocessing...")
+
+    project_directory = os.getcwd()
+    project_data_path = os.path.join(project_directory, 'data')
+    df = pd.read_csv(os.path.join(project_data_path, 'processed_senators.csv'))
+
+    # Dividing data into batches
+    total_batches = len(df) // batch_size + (len(df) % batch_size != 0)
+
+    # Iterate over batches and preprocess
+    for i in range(total_batches):
+        print(f'preprocessing batch {i + 1} of {total_batches}...')
+        start_idx = i * batch_size
+        end_idx = min(start_idx + batch_size, len(df))
+        df.loc[start_idx:end_idx, 'tfidf_preprocessed_summary'] = df.loc[start_idx:end_idx, 'BETO_summary'].apply(preprocess_text)
+
     df.to_csv(os.path.join(project_data_path, 'processed_senators.csv'), index=False)
 
 def vectorize_tfidf() -> None:

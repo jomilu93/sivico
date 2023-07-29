@@ -33,6 +33,33 @@ def tfidf_preprocess() -> None:
         truncate=True
     )
 
+def tfidf_batch_preprocess(batch_size=2) -> None:
+    """
+    Preprocesses the 'BETO_summary' column of the dataframe in batches
+    and saves the result in 'processed_senators.csv'.
+    """
+    print("Preprocessing...")
+
+    df = get_data_from_bq('processed_senators')
+
+    # Dividing data into batches
+    total_batches = len(df) // batch_size + (len(df) % batch_size != 0)
+
+    # Iterate over batches and preprocess
+    for i in range(total_batches):
+        print(f'preprocessing batch {i + 1} of {total_batches}...')
+        start_idx = i * batch_size
+        end_idx = min(start_idx + batch_size, len(df))
+        df.loc[start_idx:end_idx, 'tfidf_preprocessed_summary'] = df.loc[start_idx:end_idx, 'BETO_summary'].apply(preprocess_text)
+
+    load_data_to_bq(
+        df,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'processed_senators',
+        truncate=True
+    )
+
 def vectorize_tfidf() -> None:
     print("Vectorizing...")
 

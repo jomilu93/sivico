@@ -10,6 +10,12 @@ run_tfidf_preprocess:
 run_tfidf_preprocess_local:
 	python -c 'from sivico.interface.main_local import tfidf_preprocess; tfidf_preprocess()'
 
+run_tfidf_batch_preprocess:
+	python -c 'from sivico.interface.main import tfidf_batch_preprocess; tfidf_batch_preprocess()'
+
+run_tfidf_batch_preprocess_local:
+	python -c 'from sivico.interface.main_local import tfidf_batch_preprocess; tfidf_batch_preprocess()'
+
 run_tfidf_vectorization:
 	python -c 'from sivico.interface.main import vectorize_tfidf; vectorize_tfidf()'
 
