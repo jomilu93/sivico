@@ -8,11 +8,12 @@ from colorama import Fore, Style
 from dateutil.parser import parse
 
 from sivico.params import *
-from sivico.text_input_and_summarization.data import get_data_from_bq, load_data_to_bq
+from sivico.text_input_and_summarization.data import get_data_from_bq, get_senator_initiative_data, load_data_to_bq
 from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
-from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix_gc_storage, load_vectorizer_and_matrix, save_vectorizer_and_matrix_
+from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix_gc_storage
 from sivico.senator_matcher.matchers.beto_matcher.preprocessing import preprocess_text_for_beto
 from sivico.senator_matcher.matchers.beto_matcher.embedding import generate_embeddings, save_embeddings
+from sivico.text_input_and_summarization.summarizer import summarize_beto
 
 embeddings_filepath_storage = "beto_embeddings/embeddings_es.pkl"
 
@@ -101,7 +102,6 @@ def beto_batch_embeddings(batch_size=2) -> None:
     print("Generating Beto embeddings in batches...")
 
     project_directory = os.getcwd()
-    project_data_path = os.path.join(project_directory, 'data')
 
     df = get_data_from_bq('processed_senators')
 
@@ -135,3 +135,9 @@ def beto_batch_embeddings(batch_size=2) -> None:
         pickle.dump(all_embeddings, f)
 
     print("Embeddings saved successfully!")
+
+def run_pipeline() -> None:
+    get_senator_initiative_data()
+    summarize_beto()
+    beto_preprocess()
+    beto_batch_embeddings()
