@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+from google.cloud import storage
 
 from pathlib import Path
 from colorama import Fore, Style
@@ -9,8 +10,11 @@ from dateutil.parser import parse
 from sivico.params import *
 from sivico.text_input_and_summarization.data import get_data_from_bq, load_data_to_bq
 from sivico.senator_matcher.matchers.tfidf_matcher.preprocessing import preprocess_text
-from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix, load_vectorizer_and_matrix
+from sivico.senator_matcher.matchers.tfidf_matcher.vectorization import fit_vectorizer, save_vectorizer_and_matrix_gc_storage, load_vectorizer_and_matrix, save_vectorizer_and_matrix_
 from sivico.senator_matcher.matchers.beto_matcher.preprocessing import preprocess_text_for_beto
+from sivico.senator_matcher.matchers.beto_matcher.embedding import generate_embeddings, save_embeddings
+
+embeddings_filepath_storage = "beto_embeddings/embeddings_es.pkl"
 
 # We want to run beto_preprocess first in ordert to have both
 # preprocess fields (tfifd and BETO) in the same processed dataframe
@@ -21,6 +25,7 @@ def tfidf_preprocess() -> None:
     # to add the column tfidf_preprocessed_summary in the same dataframe
     # as beto_preprocessed_summary
     df = get_data_from_bq('processed_senators')
+    #df.reset_index(drop=True, inplace=True)
     df['tfidf_preprocessed_summary'] = df['BETO_summary'].apply(preprocess_text)
     df.dropna(subset=['tfidf_preprocessed_summary'], inplace=True)
     df.reset_index(inplace=True)
@@ -45,7 +50,8 @@ def vectorize_tfidf() -> None:
     df = get_data_from_bq('processed_senators')
 
     tfidf_matrix, vectorizer = fit_vectorizer(df, 'tfidf_preprocessed_summary')
-    save_vectorizer_and_matrix(tfidf_matrix, vectorizer, matrix_filepath, vectorizer_filepath)
+    print ("done fit vectorizer")
+    save_vectorizer_and_matrix_gc_storage(tfidf_matrix, vectorizer)
 
 def beto_preprocess() -> None:
     print('...Preprocessing')
@@ -94,5 +100,11 @@ def beto_batch_embeddings(batch_size=2) -> None:
         all_embeddings.extend(batch_embeddings)
         with open(embeddings_filepath, 'wb') as f:
             pickle.dump(all_embeddings, f)
+
+    client = storage.Client(project=GCP_PROJECT)
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(embeddings_filepath_storage)
+    with blob.open('wb') as f:
+        pickle.dump(all_embeddings, f)
 
     print("Embeddings saved successfully!")
