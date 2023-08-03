@@ -9,7 +9,7 @@ stanza
 torch
 transformers
 googletrans
-protobuf==3.20.0
+protobuf
 unidecode
 simplejson
 
