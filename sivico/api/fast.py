@@ -1,6 +1,8 @@
 import pandas as pd
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+import simplejson as json
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -26,7 +28,7 @@ app_data = {}
 # see https://fastapi.tiangolo.com/advanced/events/
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app_data['senators_df'] = get_data_from_bq("summarized_senators")
+    app_data['senators_df'] = get_data_from_bq("processed_senators")
     app_data['beto_embeddings'] = load_embeddings_beto_gc_storage()
 
     yield
@@ -35,7 +37,10 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/senators")
 def senators(user_input: str):
-    return beto_senators(user_input).to_dict(orient='records')
+    data = beto_senators(user_input).to_dict(orient='records')
+    clean_data = json.dumps(data, ignore_nan=True)
+
+    return json.loads(clean_data)
 
 def beto_senators(user_input: str):
     scores = beto_match_senators(user_input, app_data['beto_embeddings'])
