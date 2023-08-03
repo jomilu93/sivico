@@ -2,6 +2,9 @@ from . import TOKENIZER, BETO_MODEL
 
 import torch
 import pickle
+from google.cloud import storage
+
+from sivico.params import *
 
 def generate_embeddings(text, max_length=512):
     # Split the text into chunks to handle long summaries
@@ -25,3 +28,14 @@ def generate_embeddings(text, max_length=512):
 def save_embeddings(embeddings, embeddings_filepath):
     with open(embeddings_filepath, 'wb') as f:
         pickle.dump(embeddings, f)
+
+def load_embeddings_beto_gc_storage():
+    embeddings_filepath_storage = "beto_embeddings/embeddings_es.pkl"
+
+    client = storage.Client(project=GCP_PROJECT)
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(embeddings_filepath_storage)
+    with blob.open('rb') as f:
+        embeddings = pickle.load(f)
+
+    return embeddings
