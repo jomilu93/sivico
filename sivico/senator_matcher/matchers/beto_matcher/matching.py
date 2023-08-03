@@ -26,9 +26,9 @@ def get_top_senators(scores, senators_df, N=5):
     # Add similarity score to the dataframe
     top_senators['similarity_score'] = scores[sorted_indices[:N]]
 
-    return top_senators[['senator_id', 'senadores', 'Fraccion', 'Estado', 'correo', 'url_sitio', 
+    return top_senators[['senator_id', 'senadores', 'Fraccion', 'Estado', 'correo', 'url_sitio',
                          'telefono', 'attendance_score', 'similarity_score', 'Salud_initiative_list',
-                         'Estudios_Legislativos_initiative_list', 'Educación_initiative_list', 
+                         'Estudios_Legislativos_initiative_list', 'Educación_initiative_list',
                          'Para_la_Igualdad_de_Género_initiative_list', 'Defensa_Nacional_initiative_list',
                          'Gobernación_initiative_list','Seguridad_Social_initiative_list',
                          'Anticorrupción__Transparencia_y_Participación_Ciudadana_initiative_list',
