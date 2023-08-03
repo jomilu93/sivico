@@ -15,6 +15,7 @@ import numpy as np
 from lxml import etree
 import re
 from selenium import webdriver
+from unidecode import unidecode
 from sivico.params import *
 
 def get_senator_initiative_data():
@@ -201,6 +202,10 @@ def get_senator_initiative_data():
             relevant_inipros = inipros[(inipros["senator_id"] == str(row["senator_id"])) & (inipros["comisiones"]==str(commission))]["sintesis"]
             [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
             senators.at[i, f"{commission}_initiative_list"] = list(set(initiatives))
+
+    # Remove accents from column names
+    new_columns = {col: unidecode(col) for col in senators.columns}
+    senators.rename(columns=new_columns, inplace=True)
 
     print("✅ get_senator_initiative_data_done \n")
 
