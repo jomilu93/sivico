@@ -33,7 +33,7 @@ def get_senator_initiative_data():
     def get_senator_attendance():
         senators = get_senators()
         senator_ids = senators["senator_id"].tolist()
-        
+
         senator_attendance = pd.DataFrame()
         senator_attendance["senator_id"] = ""
         senator_attendance["session_date"] = ""
@@ -58,63 +58,63 @@ def get_senator_initiative_data():
         senator_attendance = pd.merge(senator_attendance, senators[['senator_id','Fraccion', 'Estado', 'Apellidos', 'Nombre', 'tipoEleccion']], on='senator_id', how='left')
 
         senator_attendance["full_name"] = senator_attendance['Nombre'] + " " + senator_attendance['Apellidos']
-        
+
         senator_attendance = senator_attendance.groupby(['senator_id', 'full_name', 'Fraccion', 'Estado', 'tipoEleccion'], as_index=False)[['attendance_score']].mean()
 
         return senator_attendance
-    
+
     senator_attendance = get_senator_attendance()
-    
+
     #add senator attendance to original senator df
     senators = senators.merge(senator_attendance[["senator_id", "attendance_score"]], how="left", on="senator_id")
-    
+
     def get_initiatives():
         """fucntion that extracts initiatives from Senate JSON."""
-        
+
         init_64_url = 'https://www.senado.gob.mx/65/datosAbiertos/iniciativa_64.json'
         init_65_url = 'https://www.senado.gob.mx/65/datosAbiertos/iniciativa_65.json'
-        
+
         init_64_json = requests.get(init_64_url).json()
         init_65_json = requests.get(init_65_url).json()
-        
+
         init_64 = pd.DataFrame.from_dict(init_64_json)
         init_65 = pd.DataFrame.from_dict(init_65_json)
-        
+
         initiatives = pd.concat([init_64, init_65])
-        
+
         initiatives['fecha_presentacion'] = pd.to_datetime(initiatives['fecha_presentacion'],errors='coerce')
         initiatives['fecha_aprobacion'] = pd.to_datetime(initiatives['fecha_aprobacion'],errors='coerce')
-        
+
         initiatives = initiatives.set_index('id')
-            
+
         return initiatives
-    
+
     def get_proposals():
         """function that extracts proposals from Senate JSON."""
-        
+
         prop_64_url = 'https://www.senado.gob.mx/65/datosAbiertos/proposicion_64.json'
         prop_65_url = 'https://www.senado.gob.mx/65/datosAbiertos/proposicion_65.json'
-        
+
         prop_64_json = requests.get(prop_64_url).json()
         prop_65_json = requests.get(prop_65_url).json()
-        
+
         prop_64 = pd.DataFrame.from_dict(prop_64_json)
         prop_65 = pd.DataFrame.from_dict(prop_65_json)
-        
+
         proposals = pd.concat([prop_64, prop_65])
-        
+
         proposals['fecha_presentacion'] = pd.to_datetime(proposals['fecha_presentacion'],errors='coerce')
         proposals['fecha_aprobacion'] = pd.to_datetime(proposals['fecha_aprobacion'],errors='coerce')
-        
+
         proposals = proposals.set_index('id')
-        
+
         return proposals
-    
+
     #Create concatenated df that includes initiatives and proposals.
     initiatives = get_initiatives()
     proposals = get_proposals()
     inipros = pd.concat([initiatives, proposals])
-    
+
     #creates a 1:1 relationship between initiative/proposal and senator (in case where more than 1 senator proposes).
     inipros["senadores"] = inipros["senadores"].apply(lambda x:x.strip().split("<br>"))
 
@@ -127,7 +127,7 @@ def get_senator_initiative_data():
         inipros.at[i, "senadores"] = senator_ids[:-1]
 
     inipros = inipros.explode("senadores")
-    
+
     #Manually change names in inipros so they match senator names from senator table.
 
     inipros.loc[inipros["senadores"] == "Geovanna del Carmen Bañuelos de La Torre", "senadores"] = "Geovanna Bañuelos"
@@ -141,13 +141,13 @@ def get_senator_initiative_data():
     inipros.loc[inipros["senadores"] == "Raúl Bolaños Cacho Cué", "senadores"] = "Raúl Bolaños-Cacho Cué"
     inipros.loc[inipros["senadores"] == "Elvia Marcela Mora Arellano", "senadores"] = "Marcela Mora"
     inipros.loc[inipros["senadores"] == "Minerva Citlalli Hernández Mora", "senadores"] = "M. Citlalli Hernández Mora"
-    
+
     #Inner join on senator names to ensure only initiatives that match senator ids from table remain.
     inipros = inipros.merge(senators[["senadores", "senator_id"]], how='inner', on='senadores')
-    
+
     #Create a clean list of commissions to which each initiative belongs
 
-    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.split("<br>")[1].strip() 
+    inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.split("<br>")[1].strip()
                                                         if "Puntos Constitucionales" in x and not x.split("<br>")[1] == ""
                                                         else x.split("<br>")[0].strip())
 
@@ -172,38 +172,38 @@ def get_senator_initiative_data():
     inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Agricultura, Ganadería, Pesca y Desarrollo Rural".strip() if "Agr" in x else x)
     inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Energía".strip() if "Recursos Hidráulicos" in x else x)
     inipros["comisiones"] = inipros["comisiones"].apply(lambda x:"Estudios Legislativos".strip() if "Legislativos" in x else x)
-    
+
     inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace(" ", "_").strip())
     inipros["comisiones"] = inipros["comisiones"].apply(lambda x:x.replace(",", "_").strip())
-    
+
     #Return overall initiative list back to senator df
     senators["initiative_list"] = ""
-    
+
     #Function that creates a list of initiative syntheses and then adds to senator database.
     for i, row in senators.iterrows():
         initiatives = []
         relevant_inipros = inipros[inipros["senator_id"] == str(row["senator_id"])]["sintesis"]
         [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
-        senators.at[i, "initiative_list"] = set(initiatives)
-        
+        senators.at[i, "initiative_list"] = list(set(initiatives))
+
     #Creates dummy summary of a all initiatives, to be replaced by BERT or BETO summaries.
     senators["initiatives_summary_dummy"] = senators["initiative_list"].apply(lambda x: "".join(x))
-    
+
     #Create column for each commission
     commissions = inipros["comisiones"].unique()
     for commission in commissions:
         senators[f"{commission}_initiative_list"] = ""
-        
+
     #Fill columns with relevant initiatves per sentator and commission
     for i, row in senators.iterrows():
         for commission in commissions:
             initiatives = []
             relevant_inipros = inipros[(inipros["senator_id"] == str(row["senator_id"])) & (inipros["comisiones"]==str(commission))]["sintesis"]
             [initiatives.append(initiative.replace('\r\n\r\n', ' ')) for initiative in relevant_inipros]
-            senators.at[i, f"{commission}_initiative_list"] = set(initiatives)
-    
+            senators.at[i, f"{commission}_initiative_list"] = list(set(initiatives))
+
     print("✅ get_senator_initiative_data_done \n")
-    
+
     #load processed senator data to big query
     load_data_to_bq(
         senators,
@@ -212,16 +212,16 @@ def get_senator_initiative_data():
         table=f'pre_processed_senators',
         truncate=True
     )
-    
+
     return senators
 
 def get_data_from_bq(table_name):
-    
+
     query = f"""
         SELECT *
         FROM {GCP_PROJECT}.{BQ_DATASET}.{table_name}
     """
-    
+
     gcp_project = os.environ.get("GCP_PROJECT")
 
     print(Fore.BLUE + "\nLoad data from BigQuery server..." + Style.RESET_ALL)
@@ -233,7 +233,7 @@ def get_data_from_bq(table_name):
     print(f"✅ Data loaded, with shape {df.shape}")
 
     return df
-        
+
 def load_data_to_bq(
         data: pd.DataFrame,
         gcp_project:str,
@@ -254,7 +254,7 @@ def load_data_to_bq(
 
     # 🎯 HINT for "*** TypeError: expected bytes, int found":
     # After preprocessing the data, your original column names are gone (print it to check),
-    # so ensure that your column names are *strings* that start with either 
+    # so ensure that your column names are *strings* that start with either
     # a *letter* or an *underscore*, as BQ does not accept anything else
 
     # $CHA_BEGIN

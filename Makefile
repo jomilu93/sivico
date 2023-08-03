@@ -43,5 +43,8 @@ run_data_summarization:
 get_data_from_bq:
 	python -c 'from sivico.text_input_and_summarization.data import get_data_from_bq; get_data_from_bq()'
 
+run_pipeline:
+	python -c 'from sivico.interface.main import run_pipeline; run_pipeline()'
+
 run_api:
 	uvicorn sivico.api.fast:app --reload

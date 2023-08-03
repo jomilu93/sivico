@@ -23,21 +23,22 @@ def summarize_beto():
     model = AutoModelForSeq2SeqLM.from_pretrained("mrm8488/bert2bert_shared-spanish-finetuned-summarization")
 
     def summarizeRow(prop_inc_t, resumentList, inputsList):
-        for parag in prop_inc_t:
+        for index, parag in enumerate(prop_inc_t):
             inputs = tokenizer.encode(parag, return_tensors="pt", max_length=511, truncation=True)
             inputsList.append(inputs)
             resumen = model.generate(
-                inputs, 
+                inputs,
                 max_length=200,
-                min_length=5, 
-                length_penalty=2.0, 
-                num_beams=4, 
+                min_length=5,
+                length_penalty=2.0,
+                num_beams=4,
                 early_stopping=True)
             resumentList.append(tokenizer.decode(resumen[0]))
-    
+            print(f'✅ Summary {index + 1} generated successfully. \n')
+
     #Adding BETO to dataset
     senators['BETO_summary'] = ""
-    
+
     index = 0
     for row in senators['initiative_list']:
         resumentList_2 = []
@@ -46,7 +47,7 @@ def summarize_beto():
         summarizeRow(row, resumentList_2, inputsList_2)
         senators['BETO_summary'][index] = resumentList_2
         index += 1
-    
+
     #clean data to ensure successful load to big query
     senators = senators.fillna("")
     senators = senators.astype(str)
@@ -61,7 +62,7 @@ def summarize_beto():
     )
 
 def summarize_bert():
-    senators = get_data_from_bq(pre_processed_senators)
+    senators = get_data_from_bq('pre_processed_senators')
 
     print("✅ senator data ready to translate and summarize. \n")
 
@@ -185,7 +186,7 @@ def summarize_bert():
 
     #Merge translated batches into one
     senators["initiative_summary_es"] = senators["initiatives_summary_es_split"].apply(lambda x: "".join(x))
-    
+
     #clean data to ensure successful load to big query
     senators = senators.fillna("")
     senators = senators.astype(str)
